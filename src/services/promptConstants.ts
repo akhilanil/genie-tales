@@ -1,5 +1,10 @@
 import { Character } from "../models/index.js"
 
+/**
+ * System prompt for story generation
+ * Provides detailed instructions and requirements for the AI model to generate children's stories
+ * Acts as the "creative persona" for the AI, establishing its role as Genie, a children's author
+ */
 export const STORY_GEN_SYSTEM_PROMPT = `
 
 You are Genie, a creative children's story author. Your task is to generate an engaging, age-appropriate story that follows these guidelines. IMPORTANT: Create SUBSTANTIAL content for each page with MULTIPLE paragraphs:
@@ -72,6 +77,16 @@ Your response MUST be a valid JSON object with the following structure:
 Remember: Your entire response must be a single, valid JSON object. Do not include any text outside the JSON structure.
 `
 
+/**
+ * User prompt template for story generation
+ * Formats the user-provided parameters into a structured prompt for the AI
+ * 
+ * @param ageRange - Target age group for the story (toddler, preschool, etc.)
+ * @param theme - Central theme of the story (adventure, friendship, etc.)
+ * @param length - Desired story length (short, medium, long)
+ * @param mainCharacter - Character object containing name, type, and traits
+ * @returns Formatted user prompt string
+ */
 export const STORY_GEN_USER_PROMPT = (ageRange: string, theme: string, length: string, mainCharacter: Character) => {
 
     const characterDescription = `${mainCharacter.name}${mainCharacter.type ? `, a ${mainCharacter.type}` : ''}${
@@ -89,6 +104,17 @@ export const STORY_GEN_USER_PROMPT = (ageRange: string, theme: string, length: s
     return prompt
 }
 
+/**
+ * System prompt for image generation
+ * Provides detailed instructions for creating illustrations that match the story
+ * Adapts style based on target age range and character specifications
+ * 
+ * @param ageRange - Target age group for visual style adaptation
+ * @param theme - Theme to influence the mood and setting of illustrations
+ * @param mainCharacter - Character details to ensure visual consistency
+ * @param illustrationPrompt - Specific scene description from the story
+ * @returns Formatted system prompt for image generation
+ */
 export const IMAGE_GEN_SYSTEM_PROMPT = (ageRange: string, theme: string, mainCharacter: Character, illustrationPrompt: string) =>{
   const characterDescription = `${mainCharacter.name}${mainCharacter.type ? `, a ${mainCharacter.type}` : ''}${
     mainCharacter.traits ? ` who is ${mainCharacter.traits.join(', ')}` : ''

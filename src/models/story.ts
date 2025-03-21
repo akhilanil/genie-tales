@@ -1,3 +1,4 @@
+import Stream from "stream";
 import { z } from "zod";
 
 export enum AgeRange {
@@ -35,6 +36,7 @@ export enum AgeRange {
     theme: StoryTheme;
     length: StoryLength;
     character: Character;
+    output: string;
   }
   
   export interface Story {
@@ -48,7 +50,8 @@ export enum AgeRange {
     pageNumber: number,
     story: string,
     illustrationPrompts: string
-    imageBase64?: string 
+    imagePath?: string 
+    audioPath?: string 
   }
 
 
@@ -60,6 +63,16 @@ export enum AgeRange {
     readonly base64: string;
   
     readonly uint8Array: Uint8Array;
+
+  }
+
+  export interface LlmAudioPageResponse {
+    readonly pageNumber: number
+    
+    readonly storyContent: string
+
+    readonly audioStream: Stream.Readable;
+  
   }
 
   
