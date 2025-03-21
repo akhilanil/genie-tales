@@ -3,8 +3,7 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
 import { AgeRange, StoryTheme, StoryLength, StoryParameters, Character } from '../models/index.js';
-import { StoryGeneratorService } from '../services/index.js';
-import {createStoryPdf} from '../services/index.js';
+import { generateVideo, StoryGeneratorService } from '../services/index.js';
 
 // Create the generate command
 export const generateCommand = new Command('generate')
@@ -14,13 +13,12 @@ export const generateCommand = new Command('generate')
   .option('-l, --length <length>', 'Length of the story')
   .option('-c, --character <name>', 'Main character name')
   .option('-i, --interactive', 'Use interactive mode to provide inputs', false)
-  // .option('--illustrations', 'Include illustration prompts in the story', false)
-  // .option('-f, --format <format>', 'Output format (text, markdown, html)', 'markdown')
-  // .option('-o, --output <path>', 'Save the story to a file')
+  .option('-o, --output <path>', 'Save the story to a file')
+  
   .action(async (options) => {
     try {
       const storyParams = await getStoryParameters(options);
-      
+  
       // Show a spinner while generating the story
       const storySpinner = ora('Generating your story and illustrations...').start();
       
@@ -29,11 +27,17 @@ export const generateCommand = new Command('generate')
       const story = await storyGenerator.generateStory(storyParams);
 
       storySpinner.succeed('Story generated successfully!!!');
+
+      // Show a spinner while generating the video
+      const videoSpinner = ora('Combining artifacts to create videos').start();
+
+      // Generating the video
+      const videoPath = await generateVideo(story, storyParams.output)
+
+      videoSpinner.succeed(`Videos creaed succesfully at ${videoPath}`)
   
       
-      await createStoryPdf(story)
-
-      // Display the story
+      // Display the story in terminal
       console.log(chalk.green(`\n${story.title}`));
       story.contents.forEach(content => {
         console.log(chalk.gray(`-----------------${content.pageNumber}------------------`));
@@ -130,7 +134,8 @@ async function getStoryParameters(options: any): Promise<StoryParameters> {
     ageRange: params.ageRange as AgeRange,
     theme: params.theme as StoryTheme,
     length: params.length as StoryLength,
-    character: character
+    character: character,
+    output: process.cwd()
   };
 }
 
@@ -140,7 +145,7 @@ async function promptForParameters(): Promise<StoryParameters> {
       type: 'list',
       name: 'ageRange',
       message: 'Select the age range:',
-      choices: Object.values(AgeRange)
+      choices: Object.values(AgeRange),
     },
     {
       type: 'list',
@@ -169,6 +174,12 @@ async function promptForParameters(): Promise<StoryParameters> {
       type: 'input',
       name: 'characterTraits',
       message: 'Enter character traits (comma-separated):'
+    },
+    {
+      type: 'input',
+      name: 'output',
+      message: 'Path for storing the video:',
+      default: process.cwd()
     }
   ]);
   
@@ -184,6 +195,7 @@ async function promptForParameters(): Promise<StoryParameters> {
     ageRange: answers.ageRange,
     theme: answers.theme,
     length: answers.length,
-    character: character
+    character: character,
+    output: answers.output
   };
 }
